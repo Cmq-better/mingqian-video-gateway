@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="明谦视频开放 API 开发者文档、在线调试与 OpenAPI 规范">
+  <title>开发者中心 · Mingqian Video Open API</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="developers.css?v=3">
+</head>
+<body>
+  <header class="dev-topbar">
+    <a class="dev-brand" href="/"><span><i></i></span><b>明谦开发者中心</b></a>
+    <nav><a href="#quickstart">快速开始</a><a href="#reference">API 参考</a><a href="#playback-flow">点播流程</a><a href="#errors">错误码</a></nav>
+    <div class="top-actions"><span class="version">API v1</span><a class="back" href="/#api">进入控制台</a></div>
+  </header>
+
+  <aside class="dev-sidebar">
+    <div class="side-search"><span>⌕</span><input id="docSearch" placeholder="搜索接口和文档" autocomplete="off"></div>
+    <p>开始使用</p>
+    <a href="#overview" class="active">概览</a><a href="#quickstart">快速开始</a><a href="#authentication">身份认证</a><a href="#permissions">权限范围</a>
+    <p>API 参考</p>
+    <div id="endpointNav"></div>
+    <p>指南</p>
+    <a href="#playback-flow">点播生命周期</a><a href="#media">HLS 媒体鉴权</a><a href="#cors">HTTP / HTTPS 与 CORS</a>
+    <p>管理员 API</p>
+    <a href="#errors">状态码与排错</a>
+  </aside>
+
+  <main class="dev-main">
+    <section id="overview" class="doc-hero">
+      <div><span class="eyebrow">MINGQIAN VIDEO OPEN API</span><h1>把视频能力接入你的服务</h1><p>通过标准 HTTP/HTTPS 接口查询设备、发起实时点播并控制 GB28181 云台。每个调用方使用独立 API Key，可按 READ、PLAYBACK、CONTROL 授予最小权限。</p><div class="hero-actions"><a href="#quickstart" class="primary">5 分钟接入</a><button onclick="downloadOpenApi()">下载 OpenAPI 3.1</button></div></div>
+      <dl><div><dt>REST</dt><dd>JSON API</dd></div><div><dt>Bearer</dt><dd>独立密钥</dd></div><div><dt>120/min</dt><dd>默认限流</dd></div><div><dt>v1</dt><dd>稳定版本</dd></div></dl>
+    </section>
+
+    <section id="quickstart" class="doc-section split-section">
+      <div class="copy"><span class="step">01</span><h2>快速开始</h2><p>先在平台“开放 API”页面为调用服务器创建密钥。密钥只完整显示一次，请存入服务器密钥管理服务或环境变量，不要写进前端代码和 Git 仓库。</p><ol><li>创建至少包含 <code>READ</code> 的 API Key</li><li>将服务地址与密钥保存为环境变量</li><li>调用健康接口验证网络、TLS 与鉴权</li><li>按业务需要增加 PLAYBACK 或 CONTROL 权限</li></ol><div class="callout success"><b>成功标志</b><span>健康接口返回 <code>{"ok":true,"status":"UP"}</code>，响应头包含限流策略。</span></div></div>
+      <div class="code-card">
+        <div class="code-tabs" data-code-group="quick"><button class="active" data-lang="curl">cURL</button><button data-lang="javascript">JavaScript</button><button data-lang="python">Python</button><button data-lang="java">Java 21</button></div>
+        <pre id="quickCode"></pre><button class="copy-code" onclick="copyElement('quickCode')">复制</button>
+      </div>
+    </section>
+
+    <section id="authentication" class="doc-section">
+      <span class="step">02</span><h2>身份认证</h2><p>所有业务接口都在请求头中使用 Bearer API Key。密钥以 <code>vhk_</code> 开头，平台仅保存 SHA-256 哈希，无法找回原文。</p>
+      <div class="header-example"><span>Authorization</span><code>Bearer vhk_your_api_key</code><button onclick="copyText('Authorization: Bearer vhk_your_api_key')">复制</button></div>
+      <div class="security-grid"><article><i>1</i><b>每服务一把密钥</b><p>按调用方隔离，便于独立撤销和审计。</p></article><article><i>2</i><b>最小权限</b><p>只授予当前集成实际需要的 Scope。</p></article><article><i>3</i><b>只经 HTTPS</b><p>公网调用必须使用 TLS，避免密钥明文传输。</p></article><article><i>4</i><b>定期轮换</b><p>创建新 Key、切换调用方后再停用旧 Key。</p></article></div>
+    </section>
+
+    <section id="permissions" class="doc-section">
+      <span class="step">03</span><h2>权限范围</h2>
+      <div class="scope-table"><div><b>READ</b><span>设备、通道、平台状态、快照与规范</span><em>所有 Key 默认包含</em></div><div><b>PLAYBACK</b><span>发起点播、心跳、停止与媒体读取</span><em>涉及媒体资源</em></div><div><b>CONTROL</b><span>GB28181 PTZ 方向、变焦与停止</span><em>涉及设备控制</em></div></div>
+    </section>
+
+    <section id="reference" class="doc-section reference-section">
+      <span class="step">04</span><h2>API 参考</h2><p>选择接口查看请求参数、代码示例和响应格式。右侧“试一试”会直接调用你填写的服务地址，API Key 仅保存在当前页面内存。</p>
+      <div class="reference-layout"><div id="endpointList" class="endpoint-list"></div><aside class="try-panel">
+        <div class="try-head"><div><span>LIVE REQUEST</span><b id="tryTitle">选择一个接口</b></div><i id="tryStatus">READY</i></div>
+        <label>服务地址<input id="apiBase" inputmode="url" autocomplete="url"></label>
+        <label>Bearer API Key<span class="secret-field"><input id="apiKey" type="password" autocomplete="off" placeholder="vhk_..."><button onclick="toggleKey()">显示</button></span></label>
+        <div id="tryFields"></div>
+        <div class="code-tabs mini" data-code-group="request"><button class="active" data-lang="curl">cURL</button><button data-lang="javascript">JS</button><button data-lang="python">Python</button></div>
+        <pre id="requestCode">请先选择接口</pre>
+        <div class="try-actions"><button onclick="copyElement('requestCode')">复制请求</button><button class="send" id="sendRequest" onclick="sendTryRequest()" disabled>发送请求</button></div>
+        <div class="response-head"><span>RESPONSE</span><button onclick="copyElement('tryResponse')">复制</button></div><pre id="tryResponse" class="response">—</pre>
+      </aside></div>
+    </section>
+
+    <section id="playback-flow" class="doc-section">
+      <span class="step">05</span><h2>点播生命周期</h2><p>点播不是单次请求。调用方需要维持会话，并在结束时主动释放资源。</p>
+      <div class="flow"><div><i>1</i><b>查询设备与通道</b><code>GET /devices</code></div><span>→</span><div><i>2</i><b>发起点播</b><code>POST /play</code></div><span>→</span><div><i>3</i><b>每 10 秒心跳</b><code>POST /heartbeat</code></div><span>→</span><div><i>4</i><b>停止点播</b><code>POST /stop</code></div></div>
+      <div class="callout warning"><b>超时回收</b><span>调用方停止发送心跳后，平台会回收观看会话。不要依赖超时作为正常停止方式。</span></div>
+    </section>
+
+    <section id="media" class="doc-section split-section">
+      <div class="copy"><span class="step">06</span><h2>HLS 媒体鉴权</h2><p>点播响应返回绝对 HLS 地址、<code>playbackToken</code> 与建议请求头。清单和每个媒体分片都必须同时携带两层凭据。</p><div class="dual-auth"><div><b>Authorization</b><span>证明调用服务器身份</span></div><strong>＋</strong><div><b>X-Playback-Token</b><span>绑定当前点播会话</span></div></div></div>
+      <div class="code-card"><div class="code-title">HLS.js 请求头配置</div><pre>const hls = new Hls({
+  xhrSetup(xhr) {
+    xhr.setRequestHeader('Authorization',
+      `Bearer ${API_KEY}`);
+    xhr.setRequestHeader('X-Playback-Token',
+      playbackToken);
+  }
+});
+hls.loadSource(hlsUrl);</pre></div>
+    </section>
+
+    <section id="cors" class="doc-section"><span class="step">07</span><h2>HTTP / HTTPS 与 CORS</h2><div class="protocol-grid"><article><b>服务器 → 服务器</b><p>不受浏览器 CORS 限制。公网使用 HTTPS，内网可通过防火墙限制来源 IP。</p></article><article><b>浏览器 → API</b><p>需要把前端精确 Origin 加入 <code>OPEN_API_ALLOWED_ORIGINS</code>，不支持任意通配来源。</p></article><article><b>反向代理</b><p>转发 <code>X-Forwarded-Proto</code> 和 <code>X-Forwarded-Host</code>，或设置 <code>PLATFORM_PUBLIC_URL</code>。</p></article></div></section>
+
+    <section id="errors" class="doc-section"><span class="step">08</span><h2>状态码与排错</h2><div class="error-table"><div><b>400</b><span>参数错误或资源状态不允许操作</span><code>检查 fields/message</code></div><div><b>401</b><span>API Key 无效，或管理员会话缺失/过期</span><code>检查 Authorization 或 Cookie</code></div><div><b>403</b><span>Scope 不足，或缺少 ADMIN 角色 / CSRF Token</span><code>检查当前鉴权模式</code></div><div><b>404</b><span>设备、通道或点播会话不存在</span><code>重新查询资源</code></div><div><b>429</b><span>超过每 Key 每分钟请求限制</span><code>遵循 Retry-After</code></div><div><b>5xx</b><span>平台、设备信令或媒体服务异常</span><code>指数退避并记录请求</code></div></div></section>
+
+    <footer><b>Mingqian Video Open API</b><span>OpenAPI 3.1 · JSON over HTTP/HTTPS · API v1</span><a href="/#api">API Key 管理</a></footer>
+  </main>
+  <div id="devToast"></div>
+  <script src="developers.js?v=2"></script>
+</body>
+</html>

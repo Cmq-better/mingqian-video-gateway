@@ -1,0 +1,22 @@
+[Unit]
+Description=Mingqian Video Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=video-gateway
+Group=video-gateway
+WorkingDirectory=/opt/mingqian-video-gateway
+EnvironmentFile=/etc/mingqian-video-gateway/gateway.env
+ExecStart=/usr/bin/java -XX:MaxRAMPercentage=70 -jar /opt/mingqian-video-gateway/mingqian-video-gateway-1.0.0.jar
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mingqian-video-gateway
+
+[Install]
+WantedBy=multi-user.target

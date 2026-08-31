@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1628"><title>登录 · 明谦视频平台</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="login.css?v=3">
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-brand">
+      <div class="grid"></div><div class="glow one"></div><div class="glow two"></div>
+      <div class="brand-line"><span class="logo"><i></i></span><div><b>明谦视频平台</b><small>MINGQIAN VIDEO CLOUD</small></div></div>
+      <div class="login-copy"><span>SECURE VIDEO PLATFORM</span><h1>安全连接每一路视频<br>清晰管理每一个通道</h1><p>统一接入 GB28181 与 RTSP 摄像机，点播、云台和开放接口均经过独立安全校验。</p></div>
+      <div class="security-points"><div><b>01</b><span>HttpOnly 安全会话<small>凭据不会保存在浏览器脚本中</small></span></div><div><b>02</b><span>直播短期令牌<small>复制播放地址无法绕过鉴权</small></span></div><div><b>03</b><span>登录限流与 CSRF<small>降低暴力破解和跨站请求风险</small></span></div></div>
+    </section>
+    <section class="login-panel">
+      <form id="loginForm" autocomplete="on">
+        <div class="mobile-brand"><span class="mobile-logo"><i></i></span>明谦视频平台</div><span class="eyebrow">SECURE CONSOLE</span><h2>登录视频控制台</h2><p>请输入平台账户继续</p>
+        <label>用户名<div class="field"><span class="field-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4.8 20c.8-3.5 3.2-5.3 7.2-5.3s6.4 1.8 7.2 5.3"/></svg></span><input id="username" name="username" autocomplete="username" value="admin" maxlength="64" required></div></label>
+        <label>密码<div class="field"><span class="field-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/><path d="M12 14v2.5"/></svg></span><input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required><button id="showPassword" class="password-toggle" type="button" aria-label="显示密码"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-2.2 2.8M6.2 6.3C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6c1.3 0 2.5-.3 3.5-.7"/></svg><span>显示</span></button></div></label>
+        <div id="loginError" class="login-error" role="alert"></div>
+        <button id="loginButton" class="submit" type="submit"><span>安全登录</span><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 7l5 5-5 5"/></svg></i></button>
+        <div class="login-foot"><span><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></i>安全连接</span><small><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>会话闲置30分钟后自动退出</small></div>
+      </form>
+    </section>
+  </main>
+  <script src="login.js?v=2"></script>
+</body>
+</html>

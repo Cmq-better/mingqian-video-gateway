@@ -1,0 +1,50 @@
+services:
+  zlm:
+    image: zlmediakit/zlmediakit:master
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      ZLM_SECRET: ${ZLM_SECRET:?set ZLM_SECRET in deploy/.env}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        sed -i "/^\[api\]/,/^\[/ s|^secret=.*|secret=$${ZLM_SECRET}|" ../conf/config.ini
+        sed -i "/^\[http\]/,/^\[/ s|^port=.*|port=18081|" ../conf/config.ini
+        exec ./MediaServer -s default.pem -c ../conf/config.ini -l 0
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: mingqian-video-gateway:local
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - zlm
+    environment:
+      HTTP_PORT: 18080
+      PLATFORM_ADMIN_PASSWORD: ${PLATFORM_ADMIN_PASSWORD:?set PLATFORM_ADMIN_PASSWORD in deploy/.env}
+      PLATFORM_ADMIN_TOKEN: ${PLATFORM_ADMIN_TOKEN:?set PLATFORM_ADMIN_TOKEN in deploy/.env}
+      PLATFORM_PUBLIC_URL: ${PLATFORM_PUBLIC_URL:-}
+      AUTH_SECURE_COOKIE: ${AUTH_SECURE_COOKIE:-false}
+      OPEN_API_ALLOWED_ORIGINS: ${OPEN_API_ALLOWED_ORIGINS:-}
+      GB_PUBLIC_IP: ${GB_PUBLIC_IP:?set GB_PUBLIC_IP in deploy/.env}
+      GB_PLATFORM_ID: ${GB_PLATFORM_ID:-34020000002000000001}
+      GB_PLATFORM_DOMAIN: ${GB_PLATFORM_DOMAIN:-3402000000}
+      GB_AUTH_ENABLED: "true"
+      GB_DEVICE_PASSWORD: ${GB_DEVICE_PASSWORD:?set GB_DEVICE_PASSWORD in deploy/.env}
+      ZLM_HOST: 127.0.0.1
+      ZLM_HTTP_PORT: 18081
+      ZLM_RTSP_PORT: 554
+      ZLM_SECRET: ${ZLM_SECRET:?set ZLM_SECRET in deploy/.env}
+      FFMPEG_PATH: ffmpeg
+      AUTH_USERS_FILE: /app/data/users.json
+      OPEN_API_KEYS_FILE: /app/data/api-keys.json
+      VIDEO_HUB_DATA: /app/data/devices.json
+      PLAYBACK_SETTINGS_FILE: /app/data/playback-settings.properties
+    volumes:
+      - gateway-data:/app/data
+
+volumes:
+  gateway-data:

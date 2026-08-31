@@ -1,0 +1,12 @@
+/target/
+/data/
+/*.log
+/.idea/
+/.vscode/
+*.iml
+video-hub.env
+.env
+deploy/.env
+*.jks
+*.p12
+*.pem

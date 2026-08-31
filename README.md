@@ -1,0 +1,120 @@
+# Mingqian Video Gateway
+
+面向 GitHub 社区的轻量视频接入网关，提供 GB/T 28181、RTSP/ZLMediaKit、安全 HLS 播放、按需断流、串行抽帧队列和 Open API。
+
+## 核心能力
+
+- GB28181：UDP SIP 注册、心跳、目录、实时点播、BYE 和 PTZ。
+- ZLMediaKit：RTSP 代理、RTP Server、HLS 输出、快照和媒体状态检查。
+- 安全播放：短期 Playback Token，媒体请求同时校验 API Key/登录会话与播放令牌。
+- 按需断流：播放心跳、主动停止、无观看者超时、并发上限和内存压力回收。
+- 抽帧队列：有界串行队列、请求限时、间隔控制、短期缓存和直播帧复用统计。
+- Open API：API Key 哈希存储、READ/PLAYBACK/CONTROL 最小权限、按 Key 限流、CORS 白名单和 OpenAPI 3.1 规范。
+- 管理控制台：设备、通道、播放资源、API Key、用户与权限管理。
+
+本社区版不包含 MQTT、视觉模型、模型权重、运行时品牌定制、Logo 上传、生产账号、API Key、设备清单或其他生产数据。
+
+## 架构
+
+```text
+IPC / NVR -- GB28181 SIP + RTP --┐
+                                 ├─ Mingqian Video Gateway ─ Open API / Console
+RTSP Camera ---------------------┘             │
+                                               └─ ZLMediaKit ─ Secure HLS
+```
+
+网关负责信令、鉴权、会话和资源生命周期；ZLMediaKit 负责媒体接收、代理与协议转换。FFmpeg 用作 RTSP 兼容拉流和截图后备方案。
+
+## 环境要求
+
+- Java 21
+- Maven 3.9+
+- ZLMediaKit（GB28181 RTP 实时播放必需）
+- FFmpeg（RTSP 后备转码与截图建议安装）
+
+## 本地构建
+
+```bash
+mvn clean verify
+java -jar target/mingqian-video-gateway-1.0.0.jar
+```
+
+首次启动前至少设置以下变量，所有示例值都必须替换：
+
+```bash
+export PLATFORM_ADMIN_PASSWORD='replace-with-a-long-random-password'
+export PLATFORM_ADMIN_TOKEN='replace-with-a-long-random-admin-token'
+export GB_PUBLIC_IP='192.0.2.10'
+export GB_DEVICE_PASSWORD='replace-with-a-device-password'
+export ZLM_SECRET='replace-with-the-same-zlm-api-secret'
+```
+
+访问 `http://127.0.0.1:18080/login.html`。首次启动会在本地 `data/` 创建管理员密码哈希；之后可移除 `PLATFORM_ADMIN_PASSWORD`，不要提交 `data/`。
+
+## Docker Compose
+
+Linux 主机可直接使用包含 ZLMediaKit 的示例：
+
+```bash
+cp deploy/.env.example deploy/.env
+# 编辑 deploy/.env，替换所有 CHANGE_ME
+docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build
+```
+
+示例使用 host 网络以避免 GB28181 动态 RTP 端口经过容器 NAT。详细说明、Nginx 和 systemd 示例见 [`deploy/README.md`](deploy/README.md)。
+
+## 关键配置
+
+| 变量 | 用途 | 默认值 |
+| --- | --- | --- |
+| `HTTP_PORT` | 管理与 API 端口 | `18080` |
+| `PLATFORM_ADMIN_PASSWORD` | 首次管理员密码，至少 12 位 | 无 |
+| `PLATFORM_ADMIN_TOKEN` | 管理接口后备令牌 | 无 |
+| `PLATFORM_PUBLIC_URL` | HTTPS 对外根地址 | 自动推断 |
+| `GB_PUBLIC_IP` | 摄像机可达的 SIP/RTP 地址 | `127.0.0.1` |
+| `GB_PLATFORM_ID` | 20 位国标平台编码 | 示例编码 |
+| `GB_PLATFORM_DOMAIN` | 国标域 | 示例域 |
+| `GB_DEVICE_PASSWORD` | GB28181 Digest 密码 | 无 |
+| `ZLM_HOST` / `ZLM_HTTP_PORT` | ZLMediaKit API 地址 | `127.0.0.1:18081` |
+| `ZLM_SECRET` | ZLMediaKit API 密钥 | 无 |
+| `FFMPEG_PATH` | FFmpeg 可执行文件 | `ffmpeg` |
+| `OPEN_API_ALLOWED_ORIGINS` | 浏览器跨域 Origin 白名单 | 空 |
+| `PLAYBACK_MAX_ACTIVE` | 最大活动播放路数 | `6` |
+| `PLAYBACK_VIEWER_TIMEOUT` | 无心跳自动回收秒数 | `25` |
+| `SNAPSHOT_QUEUE_CAPACITY` | 抽帧等待队列容量 | `12` |
+
+其余参数见 [`application.yml`](src/main/resources/application.yml) 和 [`deploy/.env.example`](deploy/.env.example)。
+
+## Open API
+
+管理员在控制台创建 API Key。完整密钥只显示一次，服务端仅保存 SHA-256 哈希。
+
+```bash
+curl -H 'Authorization: Bearer <API_KEY>' \
+  http://127.0.0.1:18080/open-api/v1/devices
+```
+
+主要端点：
+
+- `GET /open-api/v1/health`
+- `GET /open-api/v1/devices`
+- `GET /open-api/v1/channels`
+- `GET /open-api/v1/devices/{deviceId}/snapshot`
+- `POST /open-api/v1/devices/{deviceId}/play`
+- `POST .../play/{playbackId}/heartbeat`
+- `POST .../play/{playbackId}/stop`
+- `POST /open-api/v1/devices/{deviceId}/ptz`
+- `GET /open-api/v1/spec`
+
+受保护 HLS 请求必须携带 `Authorization: Bearer <API_KEY>` 和点播响应返回的 `X-Playback-Token`。
+
+## 安全与数据
+
+- 公网部署必须使用 HTTPS 反向代理，并启用 `AUTH_SECURE_COOKIE=true`。
+- 不要把摄像机凭据、管理员密码、API Key、ZLM Secret 或 `data/` 提交到 Git。
+- 默认不创建演示设备，也不包含任何生产数据。
+- 安全问题请按 [`SECURITY.md`](SECURITY.md) 私下报告。
+
+## 许可证
+
+Apache License 2.0，见 [`LICENSE`](LICENSE)。ZLMediaKit、FFmpeg、Spring Boot 和容器基础镜像各自遵循其上游许可证。

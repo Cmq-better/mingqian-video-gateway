@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+.vscode
+data
+target
+*.log
+*.jks
+*.p12
+*.pem
+deploy/.env

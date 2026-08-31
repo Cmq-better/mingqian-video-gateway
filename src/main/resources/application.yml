@@ -1,0 +1,77 @@
+server:
+  port: ${HTTP_PORT:18080}
+  address: 0.0.0.0
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: mingqian-video-gateway
+  servlet:
+    multipart:
+      max-file-size: 65MB
+      max-request-size: 68MB
+  jackson:
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+video-hub:
+  admin-token: ${PLATFORM_ADMIN_TOKEN:}
+  auth:
+    username: ${PLATFORM_ADMIN_USERNAME:admin}
+    password: ${PLATFORM_ADMIN_PASSWORD:${PLATFORM_ADMIN_TOKEN:}}
+    idle-minutes: ${AUTH_IDLE_MINUTES:30}
+    absolute-hours: ${AUTH_ABSOLUTE_HOURS:8}
+    max-failures: ${AUTH_MAX_FAILURES:5}
+    lock-minutes: ${AUTH_LOCK_MINUTES:15}
+    secure-cookie: ${AUTH_SECURE_COOKIE:false}
+    users-file: ${AUTH_USERS_FILE:./data/users.json}
+    pbkdf2-iterations: ${AUTH_PBKDF2_ITERATIONS:210000}
+    max-sessions-per-user: ${AUTH_MAX_SESSIONS_PER_USER:5}
+    max-total-sessions: ${AUTH_MAX_TOTAL_SESSIONS:1000}
+  open-api:
+    keys-file: ${OPEN_API_KEYS_FILE:./data/api-keys.json}
+    requests-per-minute: ${OPEN_API_REQUESTS_PER_MINUTE:120}
+    allowed-origins: ${OPEN_API_ALLOWED_ORIGINS:}
+  public-base-url: ${PLATFORM_PUBLIC_URL:}
+  data-file: ${VIDEO_HUB_DATA:./data/devices.json}
+  platform-id: ${GB_PLATFORM_ID:34020000002000000001}
+  platform-domain: ${GB_PLATFORM_DOMAIN:3402000000}
+  sip-port: ${GB_SIP_PORT:5060}
+  public-ip: ${GB_PUBLIC_IP:127.0.0.1}
+  sip-auth-enabled: ${GB_AUTH_ENABLED:true}
+  sip-password: ${GB_DEVICE_PASSWORD:}
+  session-timeout-seconds: ${GB_SESSION_TIMEOUT:180}
+  media:
+    host: ${ZLM_HOST:127.0.0.1}
+    http-port: ${ZLM_HTTP_PORT:18081}
+    rtsp-port: ${ZLM_RTSP_PORT:554}
+    rtp-port: ${ZLM_RTP_PORT:10000}
+    secret: ${ZLM_SECRET:}
+    public-base-url: ${ZLM_PUBLIC_URL:}
+    ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+  playback:
+    viewer-timeout-seconds: ${PLAYBACK_VIEWER_TIMEOUT:25}
+    startup-timeout-seconds: ${PLAYBACK_STARTUP_TIMEOUT:35}
+    max-active: ${PLAYBACK_MAX_ACTIVE:6}
+    token-idle-seconds: ${PLAYBACK_TOKEN_IDLE_SECONDS:120}
+    memory-pressure-enabled: ${PLAYBACK_MEMORY_PRESSURE_ENABLED:true}
+    heap-high-watermark-percent: ${PLAYBACK_HEAP_HIGH_WATERMARK_PERCENT:82}
+    system-memory-high-watermark-percent: ${PLAYBACK_SYSTEM_MEMORY_HIGH_WATERMARK_PERCENT:88}
+    pressure-evictions-per-sweep: ${PLAYBACK_PRESSURE_EVICTIONS_PER_SWEEP:1}
+    pressure-eviction-cooldown-seconds: ${PLAYBACK_PRESSURE_EVICTION_COOLDOWN_SECONDS:5}
+    settings-file: ${PLAYBACK_SETTINGS_FILE:./data/playback-settings.properties}
+  snapshot:
+    queue-capacity: ${SNAPSHOT_QUEUE_CAPACITY:12}
+    interval-millis: ${SNAPSHOT_INTERVAL_MILLIS:800}
+    cache-seconds: ${SNAPSHOT_CACHE_SECONDS:8}
+    cache-entries: ${SNAPSHOT_CACHE_ENTRIES:8}
+    media-ready-timeout-seconds: ${SNAPSHOT_MEDIA_READY_TIMEOUT_SECONDS:10}
+    request-timeout-seconds: ${SNAPSHOT_REQUEST_TIMEOUT_SECONDS:45}
+logging:
+  level:
+    cn.videohub: INFO
